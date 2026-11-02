@@ -1,0 +1,6 @@
+Rain field recording: Rain (1), by ezwa (PDSounds record #682).
+Public domain.
+Source: https://commons.wikimedia.org/wiki/File:Rain_(1).ogg
+Original: https://upload.wikimedia.org/wikipedia/commons/0/0e/Rain_%281%29.ogg
+Changes: trimmed to 42 seconds, gain +17 dB, encoded as MP3.
+Playback blends 1.5 seconds at the loop boundary.
