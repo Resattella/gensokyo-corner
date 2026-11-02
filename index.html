@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#172b36" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23bd4b3c' d='M4 8h40v6H4zm4 12h32v5H8zm4-6h6v30h-6zm18 0h6v30h-6z'/%3E%3C/svg%3E" />
+    <meta name="description" content="暮色中的博丽神社，一座可自由观赏的幻想乡微缩庭院。" />
+    <title>博丽神社 · 幻想乡的一隅</title>
+    <style>
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}body{background:#172b36}canvas{display:block;width:100%;height:100%;outline:none;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.time-controls{position:fixed;top:max(22px,env(safe-area-inset-top));left:max(24px,env(safe-area-inset-left));color:#eee3c8;font:13px/1.5 Microsoft YaHei,sans-serif;-webkit-user-select:none;user-select:none;z-index:100;pointer-events:none}.time-caption{display:block;font-family:SimSun,serif;font-size:17px;letter-spacing:.18em;text-shadow:0 1px 8px #102523}@media(max-width:600px){.time-controls{top:max(14px,env(safe-area-inset-top));left:14px}.time-caption{font-size:15px}}.hud-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.hud-seg{display:flex;padding:3px;border-radius:999px;background:#1a3131b8;border:1px solid #dfd0a540;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,.22)}.hud-btn{pointer-events:auto;border:0;background:transparent;color:#e8dcbc;font:13px/1 Microsoft YaHei,sans-serif;letter-spacing:.06em;padding:7px 13px;border-radius:999px;cursor:pointer;transition:background .2s ease,color .2s ease,filter .2s ease;-webkit-tap-highlight-color:transparent}.hud-btn:hover{filter:brightness(1.18)}.hud-btn:focus-visible{outline:2px solid #f3e4c4;outline-offset:2px}.hud-seg .hud-btn[aria-pressed="true"]{background:#bd4b3c;color:#fff;box-shadow:0 1px 6px rgba(189,75,60,.45)}.hud-weather{background:#1a3131b8;border:1px solid #dfd0a540;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,.22);padding:8px 14px}.hud-weather[aria-pressed="true"]{background:#2f5566d9;border-color:#9fc3d455;color:#e6f3fa}@media(max-width:600px){.hud-row{gap:6px;margin-top:8px}.hud-btn{font-size:12px;padding:6px 10px}.hud-weather{padding:7px 11px}}
+
+/* === Loading Overlay === */
+#loading-screen{position:fixed;inset:0;background:#172b36;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s cubic-bezier(.4,0,.2,1);color:#eee3c8;font-family:SimSun,"Yu Mincho",serif;user-select:none;-webkit-user-select:none}
+#loading-screen.loaded{opacity:0;pointer-events:none}
+.yin-yang-svg{animation:spin-orb 3.6s linear infinite;filter:drop-shadow(0 0 18px rgba(220,80,60,.7));will-change:transform;transform:translateZ(0);backface-visibility:hidden}
+@keyframes spin-orb{0%{transform:translateZ(0) rotate(0deg)}100%{transform:translateZ(0) rotate(360deg)}}
+.loading-title{margin-top:22px;font-size:19px;letter-spacing:.24em;text-shadow:0 1px 12px rgba(16,37,35,.8);color:#f5ebcf}
+.loading-sub{margin-top:8px;font-size:12px;letter-spacing:.15em;color:#9eb0b2;font-family:Microsoft YaHei,sans-serif}
+.loading-sub .dots{display:inline-block;animation:dots-pulse 1.5s infinite;width:18px}
+@keyframes dots-pulse{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}}
+
+/* === Toast Notification === */
+.shrine-toast{position:fixed;top:90px;left:50%;transform:translateX(-50%) translateY(-20px);background:#1a3131e6;border:1px solid #dfd0a555;color:#fcefc7;padding:10px 20px;border-radius:24px;font:14px/1.5 Microsoft YaHei,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);pointer-events:none;opacity:0;transition:all .35s cubic-bezier(.2,0,0,1);z-index:9999;text-align:center;max-width:90vw}
+.shrine-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* === Omikuji Modal === */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,28,.65);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.omikuji-card{background:#162c35f2;border:1px solid #dfd0a544;border-radius:18px;padding:26px 28px;max-width:440px;width:90%;color:#eee3c8;box-shadow:0 16px 40px rgba(0,0,0,.5);font-family:Microsoft YaHei,sans-serif;text-align:center;position:relative;transform:scale(.94);transition:transform .3s cubic-bezier(.2,0,0,1)}
+.modal-overlay.open .omikuji-card{transform:scale(1)}
+.card-header{font-family:SimSun,"Yu Mincho",serif;font-size:20px;letter-spacing:.2em;margin-bottom:14px;color:#f3e4c4;display:flex;align-items:center;justify-content:center;gap:8px}
+.omikuji-rank{display:inline-block;padding:6px 22px;border:2px solid #bd4b3c;border-radius:8px;color:#bd4b3c;font-family:SimSun,serif;font-size:26px;font-weight:700;margin:12px 0;background:#ffffff0d}
+.omikuji-title{font-size:15px;color:#dfd0a5;margin-bottom:8px;font-weight:600}
+.omikuji-desc{font-size:13px;line-height:1.7;color:#c0cfcf;margin-bottom:20px;text-align:justify}
+.modal-btn-row{display:flex;justify-content:center;gap:12px}
+.modal-btn{padding:8px 18px;border-radius:18px;border:1px solid #dfd0a544;background:#243e42;color:#eedeb6;font:inherit;font-size:13px;cursor:pointer;transition:all .2s ease}
+.modal-btn.primary{background:#bd4b3c;color:#fff;border-color:#d45b4c}
+.modal-btn:hover{filter:brightness(1.15)}
+.close-corner{position:absolute;top:14px;right:16px;border:0;background:transparent;color:#9eabaa;font-size:20px;cursor:pointer}
+.close-corner:hover{color:#fff}
+
+    </style>
+  </head>
+  <body>
+    <!-- 东方风阴阳玉 Loading 遮罩 -->
+    <div id="loading-screen">
+      <svg class="yin-yang-svg" viewBox="0 0 100 100" width="76" height="76">
+        <circle cx="50" cy="50" r="48" fill="#f8f4ee" stroke="#bd4b3c" stroke-width="3"/>
+        <path d="M 50 2 A 24 24 0 0 1 50 50 A 24 24 0 0 0 50 98 A 48 48 0 0 1 50 2 Z" fill="#bd4b3c"/>
+        <circle cx="50" cy="26" r="7" fill="#bd4b3c"/>
+        <circle cx="50" cy="74" r="7" fill="#f8f4ee"/>
+      </svg>
+      <div class="loading-title">博丽神社 · 幻想乡的一隅</div>
+      <div class="loading-sub"><span id="loading-quote">少女祈祷中 · 穿过鸟居，便是幻想乡的一隅</span><span class="dots">...</span></div>
+    </div>
+    <script>
+      (function() {
+        window.__LOADING_START_MS = performance.now();
+        var quotes = [
+          '少女祈祷中 · 灵梦正在清扫参道上的落樱',
+          '少女祈祷中 · 缘侧的清茶刚刚沏好',
+          '少女祈祷中 · 穿过鸟居，便是幻想乡的一隅',
+          '少女祈祷中 · 今日的赛钱箱也在等待有缘人',
+          '少女祈祷中 · 博丽大结界今日依然安泰',
+          '少女祈祷中 · 手水舍的灵峰甘泉正叮咚作响'
+        ];
+        var qEl = document.getElementById('loading-quote');
+        if (qEl) qEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+        setTimeout(function() {
+          var ls = document.getElementById('loading-screen');
+          if (ls && !ls.classList.contains('loaded')) {
+            ls.classList.add('loaded');
+            setTimeout(function() { ls.remove(); }, 650);
+          }
+        }, 8500);
+      })();
+    </script>
+
+    <!-- 3D 渲染画布 -->
+    <canvas id="scene" aria-label="博丽神社三维微缩庭院。拖动旋转，滚轮缩放，右键拖动平移；点击赛钱箱奉纳、绘马架求签、案内板切换视角。"></canvas>
+
+    <!-- 御神签模态弹窗 -->
+    <div id="omikuji-modal" class="modal-overlay">
+      <div class="omikuji-card">
+        <button class="close-corner close-modal">&times;</button>
+        <div class="card-header">🎋 博丽神社 · 御神签</div>
+        <div id="omikuji-rank" class="omikuji-rank">大吉</div>
+        <div id="omikuji-title" class="omikuji-title">结界安泰 · 香火鼎盛</div>
+        <div id="omikuji-desc" class="omikuji-desc">今日博丽大结界固若金汤。更难得的是，神社的赛钱箱今天破天荒收到了超过十日元的奉纳！</div>
+        <div class="modal-btn-row">
+          <button id="draw-again-btn" class="modal-btn primary">再摇一签</button>
+          <button class="modal-btn close-modal">纳签祈福</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        var booted = false;
+        function bootCore() {
+          if (booted) return;
+          booted = true;
+          requestAnimationFrame(function() {
+            setTimeout(function() {
+              var s = document.createElement('script');
+              s.src = "./assets/shrine-core-0e1bed2e.js";
+              s.async = true;
+              document.body.appendChild(s);
+            }, 16);
+          });
+        }
+        if (document.readyState === 'complete') {
+          bootCore();
+        } else {
+          window.addEventListener('load', bootCore, { once: true });
+        }
+      })();
+    </script>
+  </body>
+</html>
